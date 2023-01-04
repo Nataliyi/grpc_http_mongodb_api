@@ -1,0 +1,39 @@
+version: '3.7'
+
+services:
+  grpc-api:
+    container_name: grpc-api
+    image: grpc-api:v0.0.1
+    build: .
+    restart: always
+    environment:
+      GRPC_HOST: localhost
+      GRPC_PORT: 8090
+      GRPC_GATEWAY_PORT: 8080
+      DB_ADDR: localhost
+      DB_PORT: 27017
+      DB_DATABASE: store
+      DB_TABLE: users
+      METRICS_PORT: 9090
+      LOGS_FREQUENCY_CREATING: 60m
+      LOGS_PREFIX: grpc-api
+      LOGS_PATH: /app/logs
+    network_mode: host
+    volumes:
+      - $PWD/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "/bin/grpc_health_probe", "-addr=localhost:8090"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  mongo-store:
+    container_name: mongo-store
+    image: mongo:latest
+    restart: always
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+volumes:
+  mongodb_data_container:
